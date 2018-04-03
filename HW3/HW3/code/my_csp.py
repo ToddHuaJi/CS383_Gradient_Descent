@@ -39,10 +39,13 @@ class CSP(object):
         col check
         box check
         """
-        for a in range(0,9):                                #row check
+        print("this is board: ++++++")
+        print(self.variables)
+
+        for a in range(0,9):                                #row check & col check
             if np.unique(self.variables[a]).size != len(tester):
                 return False
-            if np.unique(self.variables, axis = a).size != self.variables.size:
+            if np.unique(self.variables, axis = a ).size != self.variables.size:
                 return False
 
         for R in range(0,3):                                #all 9 sub blocks
@@ -147,7 +150,7 @@ class CSP_Solver(object):
             return csp, True
 
         print(csp.variables)
-        if self.num_guesses == 2:
+        if self.num_guesses == 100:
 
             exit()
         print(self.num_guesses)
@@ -183,9 +186,10 @@ class CSP_Solver(object):
         lens = 9
         for i in range(0,9*9):
             if lens > len(chioce[i]):
-                lens = len(chioce[i])
-                location = i
-                cell = chioce[i]
+                if not chioce[i][0] == 0:
+                    lens = len(chioce[i])
+                    location = i
+                    cell = chioce[i]
 
         row = location // 9
         col = location - row*9
@@ -204,6 +208,7 @@ class CSP_Solver(object):
         '''
         cons = True                               #default True
         block_r = row // 3                        #calculate start r of block
+        block_c = col // 3
         """
         Three checks:
         1.row check
