@@ -39,14 +39,20 @@ class CSP(object):
         col check
         box check
         """
-        print("this is board: ++++++")
-        print(self.variables)
+        #print("this is board: ++++++")
+        #print(self.variables)
 
         for a in range(0,9):                                #row check & col check
+            col_check = {}
             if np.unique(self.variables[a]).size != len(tester):
                 return False
-            if np.unique(self.variables, axis = a ).size != self.variables.size:
-                return False
+            for b in range(0,9):
+                if not self.variables[a][b] in col_check:
+                    col_check[self.variables[a][b]] = self.variables[a][b]
+                else:
+                    return False
+
+
 
         for R in range(0,3):                                #all 9 sub blocks
             for C in range(0,3):
@@ -58,7 +64,7 @@ class CSP(object):
                             temp_list.append(self.variables[r][c])
                         else:
                             return False
-                if temp_list.size != len(tester):
+                if len(temp_list) != len(tester):
                     return False
                 else:
                     temp_list.clear()
@@ -95,10 +101,7 @@ class CSP_Solver(object):
             vars[i] = self.sudoku.load_board(puzzle_file)[i]      #read board config into vars
             print(vars[i])                                             #print the original config
         domains = [1,2,3,4,5,6,7,8,9]
-        print(vars)
-        for b in range(0,3):
-            print(b)
-        print(domains)
+
         self.csp = CSP(vars, domains)                                  #the CSP
 
     ################################################################
@@ -119,22 +122,13 @@ class CSP_Solver(object):
         '''
         found = False
         while not found:
-            csp, found = self.recursive_backtracking(self.sudoku, self.csp)
+            board, found = self.recursive_backtracking(self.sudoku, self.csp)
+            #print("yep", found,board)
+
+        #print("Got da board:\n", board)
+        return board, self.num_guesses
 
 
-        return self.csp.variables, self.num_guesses
-
-    def backtracking_search(self, sudoku, csp):
-        '''
-        This function might be helpful to initialize a recursive backtracking search function
-        You do not have to use it.
-
-        :param sudoku: Sudoku class instance
-        :param csp: CSP class instance
-        :return: board state (list of lists), num guesses
-        '''
-
-        return self.recursive_backtracking(sudoku, csp), self.num_guesses+1
 
     def recursive_backtracking(self, sudoku, csp):
         '''
@@ -146,23 +140,24 @@ class CSP_Solver(object):
         '''
         board = csp.variables
         self.num_guesses = self.num_guesses + 1
-        if self.csp.constraints():                       #iff complete and OK then quit
-            return csp, True
+        if csp.constraints():                       #iff complete and OK then quit
+            #print("found it",csp.variables)
+            return csp.variables, True
+        else:
+            if self.num_guesses == 100:
 
-        print(csp.variables)
-        if self.num_guesses == 100:
+                exit()
 
-            exit()
-        print(self.num_guesses)
-        chioce = self.chioce_list(board)                  #chioce list
-        row, col, num = self.select_unassigned_var(chioce)      #vector of cell and possible chioces
-        for x in num:
-            if self.consistent(row, col, x, board):       #just pick a consistent num an plug it in
-                csp.variables[row][col] = x               #assign
-                self.recursive_backtracking(self. sudoku, csp)
+            chioce = self.chioce_list(board)                  #chioce list
+            row, col, num = self.select_unassigned_var(chioce)      #vector of cell and possible chioces
+            for x in num:
+                if self.consistent(row, col, x, board):       #just pick a consistent num an plug it in
+                    csp.variables[row][col] = x               #assign
+                    self.recursive_backtracking(self. sudoku, csp)
+        if not csp.constraints():                       #iff complete and OK then quit
+            csp.variables[row][col] = 0                       #reset the board
+        return csp.variables, False
 
-        csp.variables[row][col] = 0                       #reset the board
-        return csp, False
 
     def Order_Domain_Values(self , col, row, csp):
         cell = col + row*9                              #which cell we are talking about
@@ -283,4 +278,31 @@ class CSP_Solver(object):
 
 if __name__ == '__main__':
     csp_solver = CSP_Solver('puz-001.txt')
+    #print(csp_solver.sudoku.load_board('puz-001.txt'))
     solution, guesses = csp_solver.solve()
+    print("puz-001 found with: ", guesses)
+    print(solution)
+
+    csp_solver = CSP_Solver('puz-002.txt')
+    #print(csp_solver.sudoku.load_board('puz-001.txt'))
+    solution, guesses = csp_solver.solve()
+    print("puz-001 found with: ", guesses)
+    print(solution)
+
+    csp_solver = CSP_Solver('puz-010.txt')
+    #print(csp_solver.sudoku.load_board('puz-001.txt'))
+    solution, guesses = csp_solver.solve()
+    print("puz-001 found with: ", guesses)
+    print(solution)
+
+    csp_solver = CSP_Solver('puz-015.txt')
+    #print(csp_solver.sudoku.load_board('puz-001.txt'))
+    solution, guesses = csp_solver.solve()
+    print("puz-001 found with: ", guesses)
+    print(solution)
+
+    csp_solver = CSP_Solver('puz-025.txt')
+    #print(csp_solver.sudoku.load_board('puz-001.txt'))
+    solution, guesses = csp_solver.solve()
+    print("puz-001 found with: ", guesses)
+    print(solution)
