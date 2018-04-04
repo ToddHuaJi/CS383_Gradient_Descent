@@ -28,13 +28,12 @@ def rosenbrock_grad(x, a, b):
     '''
     ### z = [ a - x0, x1 - x0]
     ### Df = [ 4b*x0*(x1-x0^2)^2 - 2(a-x0), 2*x1(x1-x0^2) ]
-    df = np.zeros(shape=[9,9])
+    df = np.zeros(2)
 
-    test_1 = 4*b*x[0] - 4*b*x[0]*x[1]+2*x[0] -2
-    test_2 = 2*b*x[1] -2*b*math.pow(x[0],2)
-    df[0] = test_1
-    df[1] = test_2
-    #print (df, gf, test_1, test_2 )
+
+    df[0] = -2*a+4*b*math.pow(x[0],3)-4*b*x[0]*x[1]+2*x[0]
+    df[1] = 2*b*(x[1]-math.pow(x[0],2))
+    #print ("grad", df, test_1, test_2 )
 
     return df
 
@@ -53,7 +52,7 @@ def rosenbrock_hessian(x, a, b):
     hes[0,1] = -4*b*x[0]
     hes[1,0] = -4*b*x[0]
     hes[1,1] = 2*b
-
+    #print("hes:", hes)
 
 
     return hes
@@ -87,17 +86,17 @@ def gradient_descent(fn, grad_fn, x0, lr, threshold=1e-10, max_steps=100000):
         fx = fn(xk)
         #print(xk, grad_fn(xk))
         xk = xk - lr*(grad_fn(xk))        #updating xk+1
-        diff = fn(xk) - fx          #diff of two functions
+        diff =fx - fn(xk)          #diff of two functions
         diff = abs(diff)
         fx = fn(xk)
         #print( diff)
 
         if diff < threshold:                #if converge, then break & return
             temp = max_steps
-            #print("hit!!!!!!!!!")
+            print("hit!!!!!!!!!")
 
 
-    #print(x0, "ended with step: ", step, "and diff: ", diff)
+    print(x0, "ended with step: ", step, "and diff: ", diff, "fx: ", fx)
 
 
     return fx, xk, step
@@ -117,7 +116,8 @@ def newton_method(fn, grad_fn, hessian_fn, x0, lr, threshold=1e-10, max_steps=10
     :return: tuple of (scalar: ending fn value, ndarray: final x, int: number of iterations)
     '''
     xk = x0
-    fx = fn(x)
+    fx = fn(xk)
+
     step = 0
     temp = 0
     count = 0
@@ -127,13 +127,13 @@ def newton_method(fn, grad_fn, hessian_fn, x0, lr, threshold=1e-10, max_steps=10
         temp = temp + 1
         count = count + 1
 
-        fx = fn(xk)
+        fx = fn(xk)                                 #old f(x)
         hs = inv(hessian_fn(xk))
-        step_dir = np.matmul(hs,grad_fn(xk))        # hes*grad
-        #print(step_dir*lr)
-        xk = xk - lr*step_dir       #updating xk+1
 
-        diff = fn(xk) - fx          #diff of two functions, new - old
+        step_dir = np.matmul(hs,grad_fn(xk))        # hes*grad
+        xk = xk - lr*np.dot(hs,grad_fn(xk))       #updating xk+1
+
+        diff = fx - fn(xk)         #diff of two functions, new - old
 
         #print(xk, diff, step_dir, tiral)
         fx = fn(xk)
@@ -144,16 +144,13 @@ def newton_method(fn, grad_fn, hessian_fn, x0, lr, threshold=1e-10, max_steps=10
         if count == 10:
             #print(xk,diff,step_dir)
             count = 0
-        if abs(last) < abs(diff):
-            print( hs, fx)
+        #if abs(last) < abs(diff):
+            #print(diff, fx)
         if abs(diff)>1e+10:
             sys.exit()
-
-
-
         last = diff
 
-    print(x0, "ended with step: ", step, "and diff: ", diff)
+    print(x0, "ended with step: ", step, "and diff: ", diff, "fx: ", fx)
 
 
     return fx, xk, step
